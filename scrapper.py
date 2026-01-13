@@ -4,69 +4,89 @@ import os
 
 
 class WikiScraper:
-    # param phrase: Czego szukamy?
-    # param use_local_file: Czy szukamy w internecie czy bierzemy z dysku
+    def __init__(self, szukana_fraza, tryb_offline=False):
+        self.url = "https://www.generasia.com/wiki/"
+        self.fraza = szukana_fraza
+        self.tryb_offline = tryb_offline  # True = czytamy z pliku, False = pobieramy z internetu
+        self.zupa = None  # Tutaj bedzie obiekt BeautifulSoup
 
-    def __init__(self, phrase, use_local_file=False):
-        # Adres bazowy dla Harry Potter Wiki
-        self.base_url = "https://harrypotter.fandom.com/wiki/"
-        self.phrase = phrase
-        self.use_local_file = use_local_file
-        self.soup = None  # Tu wyląduje pobrany kod strony
+    def pobierz_strone(self):
+        #zamieniamy spacje na podkreslniki, bo tak ma ta wiki w URLu
+        nazwa_pliku = f"{self.fraza.replace(' ', '_')}.html"
 
-    def _get_url(self):
-        # Zamienia spacje na _
-        return f"{self.base_url}{self.phrase.replace(' ', '_')}"
+        if self.tryb_offline:
+            print(f"--- Tryb offline: szukam pliku {nazwa_pliku} ---")
 
-    def fetch(self):
-        #Pobiera stronę z sieci LUB wczytuje z pliku
-        formatted_filename = self.phrase.replace(' ', '_') + ".html"
+            # Sprawdzamy czy plik fizycznie istnieje na dysku
+            if not os.path.exists(nazwa_pliku):
+                raise FileNotFoundError("Nie masz jeszcze tego pliku! Odpal najpierw z tryb_offline=False.")
 
-        if self.use_local_file:
-            # Tryb OFFLINE
-            print(f"[DEBUG] Próba wczytania pliku lokalnego: {formatted_filename}")
-            if not os.path.exists(formatted_filename):
-                raise FileNotFoundError(f"Nie masz pliku: {formatted_filename}. Uruchom raz z internetem!")
-            #Otwarce pliku i zapis do zmiennej
-            with open(formatted_filename, "r", encoding="utf-8") as f:
-                html_content = f.read()
+            # Czytanie pliku
+            with open(nazwa_pliku, "r", encoding="utf-8") as plik:
+                tekst_strony = plik.read()
         else:
-            # Tryb ONLINE
-            url = self._get_url()
-            print(f"[INFO] Pobieranie z sieci: {url}")
-            # Udajemy przeglądarkę
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-            # Jedziemy sobie po stronę
-            response = requests.get(url, headers=headers)
-            #Sparwdzamy czy jest błąd
-            if response.status_code != 200:
-                raise Exception(f"Błąd! Strona zwróciła kod: {response.status_code}")
-            #Zapis do zmiennej
-            html_content = response.text
+            # Budujemy pełny link
+            pelny_url = self.url + self.fraza.replace(' ', '_')
+            print(f"--- Pobieranie z sieci: {pelny_url} ---")
 
-            # Zapis na dysk
-            with open(formatted_filename, "w", encoding="utf-8") as f:
-                f.write(html_content)
-                print(f"[INFO] Zapisano kopię strony jako {formatted_filename}")
+            # User-Agent żeby strona nie myslala ze jestesmy botem
+            naglowki = {'User-Agent': 'Mozilla/5.0'}
+            odpowiedz = requests.get(pelny_url, headers=naglowki)
 
-        # BeautifulSoup przetwarza tekst na obiekt
-        self.soup = BeautifulSoup(html_content, 'html.parser')
-        return True
+            # 200 to znaczy ze wszystko ok
+            if odpowiedz.status_code != 200:
+                raise Exception(f"Cos poszlo nie tak, kod bledu: {odpowiedz.status_code}")
 
-    def get_summary(self):
-        """TODO"""
-        if not self.soup:
-            self.fetch()
-        return "STRESZCZENIE    "
+            tekst_strony = odpowiedz.text
+
+            # Zapisujemy html na przyszlosc
+            with open(nazwa_pliku, "w", encoding="utf-8") as plik:
+                plik.write(tekst_strony)
+                print("Zapisano plik HTML na dysku.")
+
+        # Tworzymy obiekt BS do przeszukiwania
+        self.zupa = BeautifulSoup(tekst_strony, 'html.parser')
+
+    def znajdz_opis(self):
+        # Jesli ktos zapomnial wywolac pobieranie wczesniej
+        if self.zupa is None:
+            self.pobierz_strone()
+
+        # Szukamy glownego diva z trescia (na tej wiki ma id bodyContent)
+        glowny_kontener = self.zupa.find(id='bodyContent')
+
+        if not glowny_kontener:
+            return "Blad: Nie znalazlem glownej tresci na stronie."
+
+        # Wyciagamy wszystkie 'p' czyli paragrafy
+        wszystkie_akapity = glowny_kontener.find_all('p')
+
+        for akapit in wszystkie_akapity:
+            czysty_tekst = akapit.get_text().strip()
+
+            # Omijamy puste lub bardzo krotkie linijki
+            if len(czysty_tekst) < 30:
+                continue
+
+            # Omijamy teksty techniczne typu "Redirects here"
+            if "Redirects here" in czysty_tekst or "For other uses" in czysty_tekst:
+                continue
+
+            # Jak przeszlo filtry, to pewnie to jest to streszczenie
+            return czysty_tekst
+
+        return "Niestety nic nie znaleziono."
 
 
-# test podstawowy
+# test
 if __name__ == "__main__":
-    # Testujemy, czy pobierze stronę o Harrym Potterze
     try:
-        scraper = WikiScraper("Harry Potter")
-        scraper.fetch()
-        print("Sukces! Pobraliśmy Harry'ego!")
-    except Exception as e:
-        print(f"Coś poszło nie tak: {e}")
+        moj_scraper = WikiScraper("BTS", tryb_offline=False)
+
+        print(f"Analizuje fraze: {moj_scraper.fraza}")
+        wynik = moj_scraper.znajdz_opis()
+        print("\nwynik:")
+        print(wynik)
+
+    except Exception as blad:
+        print(f"Wystapil blad w programie: {blad}")
