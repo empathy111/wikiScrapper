@@ -61,7 +61,7 @@ class WikiScraper:
         return "STRESZCZENIE    "
 
 
-# test
+# test podstawowy
 if __name__ == "__main__":
     # Testujemy, czy pobierze stronę o Harrym Potterze
     try:
