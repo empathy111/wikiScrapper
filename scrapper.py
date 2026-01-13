@@ -94,7 +94,7 @@ class WikiScraper:
         if indeks >= len(wszystkie_tabele):
             return f"Nie ma tabeli nr {numer_tabeli}. Jest ich {len(wszystkie_tabele)}."
 
-        # Wybieramy konkretną tabelę
+        # Wybieramy  konkretną tabelę
         wybrana_tabela = wszystkie_tabele[indeks]
 
         try:
