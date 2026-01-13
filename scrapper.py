@@ -1,7 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import os
-
+import pandas as pd
+from io import StringIO
 
 class WikiScraper:
     def __init__(self, szukana_fraza, tryb_offline=False):
@@ -27,7 +28,7 @@ class WikiScraper:
         else:
             # Budujemy pełny link
             pelny_url = self.url + self.fraza.replace(' ', '_')
-            print(f"--- Pobieranie z sieci: {pelny_url} ---")
+            print(f"Pobieranie z sieci: {pelny_url}")
 
             # User-Agent żeby strona nie myslala ze jestesmy botem
             naglowki = {'User-Agent': 'Mozilla/5.0'}
@@ -77,16 +78,75 @@ class WikiScraper:
 
         return "Niestety nic nie znaleziono."
 
+    def zapisz_tabele(self, numer_tabeli=1):
+        """Zadanie 2: Pobiera tabelę, zapisuje do CSV i liczy wystąpienia wartości."""
+        if self.zupa is None:
+            self.pobierz_strone()
 
-# test
+        # Szukamy wszystkich tabel <table>
+        wszystkie_tabele = self.zupa.find_all('table')
+
+        if not wszystkie_tabele:
+            return "Brak tabel na tej stronie."
+
+        # Sprawdzamy czy tabela o takim numerze istnieje
+        indeks = numer_tabeli - 1
+        if indeks >= len(wszystkie_tabele):
+            return f"Nie ma tabeli nr {numer_tabeli}. Jest ich {len(wszystkie_tabele)}."
+
+        # Wybieramy konkretną tabelę
+        wybrana_tabela = wszystkie_tabele[indeks]
+
+        try:
+            #Zamieniamy na ramke
+            html_string = str(wybrana_tabela)
+            dfs = pd.read_html(StringIO(html_string), header=0)
+
+            if not dfs:
+                return "Blad: Pandas nie odczytal tabeli."
+
+            dane_tabeli = dfs[0]  # To nasza glowna tabela
+
+           #zapis do pliku
+            nazwa_pliku = f"{self.fraza.replace(' ', '_')}_tabela_{numer_tabeli}.csv"
+
+            dane_tabeli.to_csv(nazwa_pliku, index=False, encoding='utf-8')
+            print(f"Zapisano plik: {nazwa_pliku}")
+
+            #statystyki
+            print(f"\nStatystyka wystąpień w tabeli nr {numer_tabeli}")
+
+            liczniki = dane_tabeli.stack().value_counts()
+
+            # Wypisujemy top 10 najczestszych wartosci (zeby nie zasmiecic ekranu caloscia)
+            #MAYBE FIXME HERE bo chyba do zadania trzeba wypisać po prostu wszystko :(
+            print(liczniki.head(10))
+
+            return "Operacja zakonczona."
+
+        except Exception as e:
+            return f"Problem z przetwarzaniem tabeli: {e}"
+
+#test
 if __name__ == "__main__":
-    try:
-        moj_scraper = WikiScraper("BTS", tryb_offline=False)
+    print("ROZPOCZYNAM PRACĘ SKRAPERA")
 
-        print(f"Analizuje fraze: {moj_scraper.fraza}")
-        wynik = moj_scraper.znajdz_opis()
-        print("\nwynik:")
-        print(wynik)
+    try:
+        temat = "Produce 48"
+        moj_scraper = WikiScraper(temat, tryb_offline=False)
+
+        print(f"\nPobieram streszczenie dla: {temat}")
+        streszczenie = moj_scraper.znajdz_opis()
+        print(streszczenie)
+
+
+        numer_tabeli = 3
+
+        print(f"\nPobieram tabelę numer {numer_tabeli}...")
+        wynik_tabeli = moj_scraper.zapisz_tabele(numer_tabeli)
+
+        print(f"STATUS: {wynik_tabeli}")
 
     except Exception as blad:
-        print(f"Wystapil blad w programie: {blad}")
+        print(f"\nBłąd: {blad}")
+        print("Problem z przetwarzaniem.")
