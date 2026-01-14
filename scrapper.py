@@ -52,7 +52,7 @@ class WikiScraper:
         return None
 
     def get_table_data(self, n=1):
-        """Zwraca obiekt pandas DataFrame dla n-tej tabeli."""
+        """Zwraca obiekt pandas DataFrame dla n-tej tabeli z autowykrywaniem nagłówków."""
         if not self.soup:
             self.fetch()
 
@@ -62,13 +62,32 @@ class WikiScraper:
         if not tables or idx >= len(tables):
             raise IndexError(f"Nie znaleziono tabeli nr {n}")
 
-        html_str = str(tables[idx])
-        dfs = pd.read_html(StringIO(html_str), header=0)
+        selected_table = tables[idx]
+
+        # Jeśli tabela ma znaczniki <th>, to znaczy, że ma nagłówek.
+        # Wtedy header=0. Jeśli nie ma, header=None.
+        has_headers = selected_table.find('th') is not None
+        header_option = 0 if has_headers else None
+
+        html_str = str(selected_table)
+        dfs = pd.read_html(StringIO(html_str), header=header_option)
 
         if not dfs:
             raise ValueError("Pandas nie odczytał danych z tabeli")
 
-        return dfs[0]  # Zwracamy DataFrame
+        df = dfs[0]
+
+        # Czyszczenie duplikatów jesli sa nagłówki
+        if header_option == 0 and not df.empty and len(df) > 0:
+            first_col_name = str(df.columns[0])
+            first_cell_value = str(df.iloc[0, 0])
+
+            # Jeśli nazwa kolumny i pierwsza komórka są identyczne
+            if first_col_name == first_cell_value:
+                df = df.iloc[1:]  # Odetnij wiersz 0
+                df = df.reset_index(drop=True)  # Napraw numerację wierszy
+
+        return df
 
     def get_all_words(self):
         """Zadanie 3: Wyciąga listę wszystkich słów z artykułu."""
