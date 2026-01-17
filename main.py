@@ -3,6 +3,7 @@ from scrapper import WikiScraper
 from manager import DataManager
 from analyzer import WordAnalyzer
 from crawler import WikiCrawler
+import pandas as pd
 
 
 class WikiApp:
@@ -11,6 +12,7 @@ class WikiApp:
         self.manager = DataManager()
         self.analyzer = WordAnalyzer()
         self.crawler = WikiCrawler(self.manager)
+
 
     def run(self):
         if self.args.mode == 'analyze':
