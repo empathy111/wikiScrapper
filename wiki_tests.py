@@ -90,7 +90,7 @@ class TestWikiProject(unittest.TestCase):
         expected_filename = "AC-DC_Rock_tabela_1.csv"
         self.assertEqual(generated_filename, expected_filename)
 
-        # Sprzątamy utworzony plik csv
+
         if os.path.exists(generated_filename):
             os.remove(generated_filename)
 
