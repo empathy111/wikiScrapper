@@ -39,10 +39,10 @@ def run_integration_test():
         expected_fragment = "Red Velvet (Korean: 레드벨벳) is a South Korean girl group."
 
         if summary and expected_fragment in summary:
-            print("SUKCES: Streszczenie zostało poprawnie odczytane z pliku lokalnego!")
+            print("Streszczenie zostało poprawnie odczytane z pliku lokalnego!")
             exit_code = 0
         else:
-            print("PORAŻKA: Streszczenie nie zgadza się z oczekiwaniami.")
+            print("Streszczenie nie zgadza się z oczekiwaniami.")
             exit_code = 1
 
     except Exception as e:
