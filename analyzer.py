@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
+# Upewnij się, że masz zainstalowane wordfreq: pip install wordfreq
 from wordfreq import word_frequency, top_n_list
 
 
@@ -21,20 +22,24 @@ class WordAnalyzer:
             print("Brak danych do analizy. Uruchom najpierw --count-words.")
             return
 
+        # Pobieramy 10k najczęstszych słów angielskich jako bazę odniesienia
         lang_top_words = top_n_list('en', 10000)
+
         max_article_freq = max(my_counts.values()) if my_counts else 1
         freq_the = word_frequency('the', 'en')
 
         words_to_analyze = []
         if mode == 'article':
+            # Słowa najczęstsze w naszych zescrapowanych artykułach
             sorted_my_words = sorted(my_counts.items(), key=lambda item: item[1], reverse=True)
             words_to_analyze = [w[0] for w in sorted_my_words[:count]]
         else:
+            # Słowa najczęstsze w języku angielskim
             words_to_analyze = lang_top_words[:count]
 
         data = []
         for word in words_to_analyze:
-            # Nasza częstotliwość (znormalizowana)
+            # Częstotliwość w artykule
             art_val = my_counts.get(word, 0)
             art_freq = round(art_val / max_article_freq, 4) if word in my_counts else None
 
@@ -50,22 +55,27 @@ class WordAnalyzer:
 
         df = pd.DataFrame(data)
         print(f"\n--- ANALIZA (Tryb: {mode}) ---")
-        print(df.to_string(index=False, na_rep="-"))  # na_rep="-" robi luki tam gdzie None
+        print(df.to_string(index=False, na_rep="-"))
 
         if chart_path:
-            # Do wykresu musimy zamienić luki na 0, żeby matplotlib nie płakał
+            # Do wykresu zamieniamy None na 0
             df_plot = df.fillna(0)
             self.plot_chart(df_plot, chart_path)
+            print(f"Wykres zapisano do: {chart_path}")
 
     def plot_chart(self, df, path):
         fig, ax = plt.subplots(figsize=(10, 6))
         x = range(len(df["word"]))
         width = 0.35
+
         ax.bar([i - width / 2 for i in x], df["frequency in article"], width, label='Artykuł')
         ax.bar([i + width / 2 for i in x], df["frequency in wiki language"], width, label='Język')
+
         ax.set_xticks(x)
         ax.set_xticklabels(df["word"], rotation=45)
+        ax.set_title("Porównanie częstotliwości słów")
         ax.legend()
+
         plt.tight_layout()
         plt.savefig(path)
         plt.close()
