@@ -52,7 +52,7 @@ def run_integration_test():
     finally:
         if os.path.exists(filename):
             os.remove(filename)
-            print("Posprzątano plik testowy.")
+            print("Posprzątano plik testowy")
 
     sys.exit(exit_code)
 
