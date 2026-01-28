@@ -43,7 +43,7 @@ class TestWikiProject(unittest.TestCase):
             with open(manager.json_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            self.assertEqual(data["the"], 8)  # 5 + 3 = 8
+            self.assertEqual(data["the"], 8)
             self.assertEqual(data["music"], 1)
 
         finally:
@@ -71,7 +71,7 @@ class TestWikiProject(unittest.TestCase):
         self.assertIn("Red Velvet", links)
         self.assertIn("Aespa", links)
         self.assertNotIn("File:Image.jpg", links)
-        self.assertNotIn("https://google.com", links)  # nie ma w wynikach bo to nie wewnetrzny link
+        self.assertNotIn("https://google.com", links)
         self.assertEqual(len(links), 2)
 
     # TEST 4: Sprawdzamy metodę save_csv z Managera
