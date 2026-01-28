@@ -8,23 +8,22 @@ from manager import DataManager
 
 class TestWikiProject(unittest.TestCase):
 
-    # TEST 1: Sprawdzamy metodę get_all_words na wstrzykniętym HTML
+    # TEST 1: Sprawdzamy metodę get_all_words
     def test_word_cleaning(self):
         scraper = WikiScraper("Dummy", offline=True)
 
-        # Tworzymy sobie html
+        # html
         html_content = """
-        <div id="bodyContent">
-            Red Velvet! Is a group. Red velvet.
-        </div>
-        """
+           <div id="bodyContent">
+               Red Velvet! Is the group. Red velvet.
+           </div>
+           """
         scraper.soup = BeautifulSoup(html_content, 'html.parser')
 
         # Wywołujemy faktyczną metodę z klasy
         words = scraper.get_all_words()
+        expected = ["red", "velvet", "is", "the", "group", "red", "velvet"]
 
-        # Oczekujemy listy wyczyszczonych słów
-        expected = ["red", "velvet", "is", "a", "group", "red", "velvet"]
         self.assertEqual(words, expected)
 
     # TEST 2: Sprawdzamy, czy manager dobrze sumuje słowa w pliku JSON

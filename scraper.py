@@ -100,7 +100,7 @@ class WikiScraper:
 
         text = content.get_text(separator=' ', strip=True)
         # Znajdź słowa (litery + cyfry, bez znaków specjalnych), zamień na małe
-        return re.findall(r'\w+', text.lower())
+        return re.findall(r'[a-z]{2,}', text.lower())
 
     def get_internal_links(self):
         """Wyciąga nazwy artykułów z linków wewnętrznych."""

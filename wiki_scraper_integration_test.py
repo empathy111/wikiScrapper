@@ -4,19 +4,18 @@ from scraper import WikiScraper
 
 
 def run_integration_test():
-    print("Uruchamiam test integracyjny (Offline)...")
+    print("Uruchamiam test integracyjny")
 
     phrase = "Test_Integration_Dummy"
     filename = f"{phrase}.html"
 
-
-    # html
+    #jakiś html
     html_content = """
     <html>
         <body>
             <h1>Nagłówek strony</h1>
             <div id="bodyContent">
-                <p>To jest przykładowy paragraf testowy.</p>
+                <p>Krótki wstęp.</p>
                 <p>Red Velvet (Korean: 레드벨벳) is a South Korean girl group.</p>
             </div>
         </body>
@@ -27,10 +26,7 @@ def run_integration_test():
         f.write(html_content)
 
     try:
-        # Inicjalizujemy scrapera w trybie offline
         scraper = WikiScraper(phrase, offline=True)
-
-        # Pobieramy summary
         summary = scraper.get_summary()
 
         print(f"Pobrane streszczenie: '{summary}'")
@@ -46,13 +42,13 @@ def run_integration_test():
             exit_code = 1
 
     except Exception as e:
-        print(f"BŁĄD KRYTYCZNY: {e}")
+        print(f"BŁĄD: {e}")
         exit_code = 1
 
     finally:
         if os.path.exists(filename):
             os.remove(filename)
-            print("Posprzątano plik testowy")
+            print("Posprzątano plik testowy.")
 
     sys.exit(exit_code)
 
