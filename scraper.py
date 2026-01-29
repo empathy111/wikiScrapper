@@ -12,16 +12,15 @@ class WikiScraper:
         self.phrase = phrase
         self.offline = offline
         self.soup = None
-        # Generujemy nazwę pliku na podstawie frazy
+        # Generujemy nazwę pliku na podstawie frazy (zamiana spacji na podkreślenia)
         self.filename = f"{self.phrase.replace(' ', '_')}.html"
 
     def fetch(self):
-        """Pobiera kod strony (z pliku lub z sieci)."""
+        """Pobiera kod strony (z pliku lub z sieci) i parsuje go do BeautifulSoup."""
         if self.offline and os.path.exists(self.filename):
             with open(self.filename, "r", encoding="utf-8") as f:
                 html = f.read()
         else:
-            # Tryb online lub brak pliku w trybie offline
             url = self.base_url + self.phrase.replace(' ', '_')
             headers = {'User-Agent': 'Mozilla/5.0'}
 
@@ -31,11 +30,10 @@ class WikiScraper:
                     raise Exception(f"Błąd HTTP: {response.status_code}. Strona '{self.phrase}' nie istnieje.")
                 html = response.text
 
-                # Zapisujemy cache
+                # Zapisujemy cache dla trybu offline
                 with open(self.filename, "w", encoding="utf-8") as f:
                     f.write(html)
             except requests.RequestException as e:
-                # Jeśli jesteśmy offline i nie ma pliku, rzucamy błąd
                 if self.offline:
                     raise FileNotFoundError(f"Brak pliku lokalnego {self.filename} i brak dostępu do sieci.")
                 raise e
@@ -43,6 +41,7 @@ class WikiScraper:
         self.soup = BeautifulSoup(html, 'html.parser')
 
     def get_summary(self):
+        """Pobiera pierwszy sensowny akapit tekstu."""
         if not self.soup:
             self.fetch()
 
@@ -52,13 +51,15 @@ class WikiScraper:
 
         for p in content.find_all('p'):
             text = p.get_text().strip()
-            #jakies pomijanie
+            # Warunek filtrujący:
+            # 1. len > 30: Odrzucamy puste linie i krótkie metadane.
+            # 2. "Redirects here": Odrzucamy informacje o przekierowaniach typowe dla wiki.
             if len(text) > 30 and "Redirects here" not in text:
                 return text
         return None
 
     def get_table_data(self, n=1, force_header=False):
-        """Wyciąga n-tą tabelę ze strony."""
+        """Wyciąga n-tą tabelę ze strony jako DataFrame."""
         if not self.soup:
             self.fetch()
 
@@ -81,9 +82,8 @@ class WikiScraper:
         except Exception as e:
             raise ValueError(f"Błąd parsowania tabeli: {e}")
 
-        # Czyszczenie nagłówków jeśli zduplikowane w danych
+        # Czyszczenie nagłówków, jeśli zostały zduplikowane w danych
         if header_option == 0 and not df.empty:
-            # Sprawdzenie czy nazwy kolumn są takie same jak pierwszy wiersz
             if all(str(c) == str(v) for c, v in zip(df.columns, df.iloc[0])):
                 df = df.iloc[1:].reset_index(drop=True)
 
@@ -99,7 +99,7 @@ class WikiScraper:
             return []
 
         text = content.get_text(separator=' ', strip=True)
-        # Znajdź słowa (litery + cyfry, bez znaków specjalnych), zamień na małe
+        # Znajdź słowa (litery co najmniej 2 znaki), zamień na małe
         return re.findall(r'[a-z]{2,}', text.lower())
 
     def get_internal_links(self):

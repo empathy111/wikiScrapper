@@ -1,10 +1,14 @@
 import argparse
 import sys
+import logging
 from scraper import WikiScraper
 from manager import DataManager
 from analyzer import WordAnalyzer
 from crawler import WikiCrawler
 
+# Konfiguracja logowania
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class WikiApp:
     def __init__(self, args):
@@ -14,7 +18,7 @@ class WikiApp:
         self.crawler = WikiCrawler(self.manager)
 
     def run(self):
-        # Tryb analizy nie wymaga frazy
+        # Tryb analizy nie wymaga frazy wejściowej
         if self.args.mode == 'analyze':
             self.analyzer.analyze(
                 mode=self.args.analyze_mode,
@@ -23,9 +27,9 @@ class WikiApp:
             )
             return
 
-        # Dla pozostałych trybów fraza jest wymagana
+        # Walidacja: Dla pozostałych trybów fraza jest wymagana
         if not self.args.phrase:
-            print("Błąd: Musisz podać frazę dla wybranego trybu!")
+            logger.error("Błąd: Musisz podać frazę dla wybranego trybu!")
             sys.exit(1)
 
         # Tryb crawlera
@@ -37,7 +41,7 @@ class WikiApp:
             )
             return
 
-        # Inicjalizacja scrapera
+        # Inicjalizacja scrapera dla pojedynczej strony
         scraper = WikiScraper(self.args.phrase, offline=False)
 
         try:
@@ -55,6 +59,10 @@ class WikiApp:
                 filename = self.manager.save_csv(df, self.args.phrase, self.args.number)
 
                 print(f"\nDANE TABELI (Zapisano do: {filename}):")
+                # Opcja pandas, żeby tabelki ładniej wyglądały w terminalu
+                import pandas as pd
+                pd.set_option('display.max_columns', None)
+                pd.set_option('display.width', 1000)
                 print(df.to_string(index=False))
 
                 print("\nSTATYSTYKA WARTOŚCI:")
@@ -65,13 +73,13 @@ class WikiApp:
             elif self.args.mode == 'count_words':
                 words = scraper.get_all_words()
                 if words:
-                    self.manager.update_word_counts(words)
-                    print(f"Zaktualizowano word-counts.json o {len(words)} słów z artykułu '{self.args.phrase}'.")
+                    count = self.manager.update_word_counts(words)
+                    logger.info(f"Zaktualizowano word-counts.json o {count} słów z artykułu '{self.args.phrase}'.")
                 else:
-                    print("Nie znaleziono słów w artykule.")
+                    logger.warning("Nie znaleziono słów w artykule.")
 
         except Exception as e:
-            print(f"Wystąpił błąd podczas działania programu: {e}")
+            logger.error(f"Wystąpił błąd podczas działania programu: {e}")
 
 
 if __name__ == "__main__":
@@ -89,7 +97,7 @@ if __name__ == "__main__":
     parser.add_argument("--number", type=int, default=1, help="Numer tabeli do pobrania")
     parser.add_argument("--first-row-is-header", action="store_true", help="Traktuj pierwszy wiersz jako nagłówek")
     parser.add_argument("--mode", dest="analyze_mode", default="article", choices=['article', 'language'],
-                        help="Tryb analizy")
+                        help="Tryb analizy (wymaga --analyze...)")
     parser.add_argument("--count", type=int, default=10, help="Liczba słów do analizy")
     parser.add_argument("--chart", help="Ścieżka do zapisu wykresu (png)")
     parser.add_argument("--depth", type=int, default=1, help="Głębokość crawlera")
