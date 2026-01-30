@@ -29,7 +29,6 @@ class WikiScraper:
                 if response.status_code != 200:
                     raise Exception(f"Błąd HTTP: {response.status_code}. Strona '{self.phrase}' nie istnieje.")
                 html = response.text
-
                 # Zapisujemy cache dla trybu offline
                 with open(self.filename, "w", encoding="utf-8") as f:
                     f.write(html)
@@ -41,7 +40,7 @@ class WikiScraper:
         self.soup = BeautifulSoup(html, 'html.parser')
 
     def get_summary(self):
-        """Pobiera pierwszy sensowny akapit tekstu."""
+        """Pobiera pierwszy akapit tekstu."""
         if not self.soup:
             self.fetch()
 
@@ -52,8 +51,8 @@ class WikiScraper:
         for p in content.find_all('p'):
             text = p.get_text().strip()
             # Warunek filtrujący:
-            # 1. len > 30: Odrzucamy puste linie i krótkie metadane.
-            # 2. "Redirects here": Odrzucamy informacje o przekierowaniach typowe dla wiki.
+            # len > 30: Odrzucamy puste linie i krótkie metadane.
+            # "Redirects here": Odrzucamy informacje o przekierowaniach typowe dla wiki.
             if len(text) > 30 and "Redirects here" not in text:
                 return text
         return None
@@ -99,7 +98,7 @@ class WikiScraper:
             return []
 
         text = content.get_text(separator=' ', strip=True)
-        # Znajdź słowa (litery co najmniej 2 znaki), zamień na małe
+        # Znajdź słowa, litery zamień na małe
         return re.findall(r'\w{2,}', text.lower())
 
     def get_internal_links(self):

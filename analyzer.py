@@ -1,8 +1,12 @@
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
+import logging
 from wordfreq import word_frequency, top_n_list
 
+# Konfiguracja loggowania
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class WordAnalyzer:
     def __init__(self, json_file="word-counts.json"):
@@ -18,7 +22,7 @@ class WordAnalyzer:
     def analyze(self, mode="article", count=10, chart_path=None):
         my_counts = self.load_my_counts()
         if not my_counts:
-            print("Brak danych do analizy. Uruchom najpierw --count-words.")
+            logging.warning("Brak danych do analizy. Uruchom najpierw --count-words.")
             return
 
         # Pobieramy najczęstsze słowa angielskie jako bazę odniesienia
@@ -53,14 +57,14 @@ class WordAnalyzer:
             })
 
         df = pd.DataFrame(data)
-        print(f"\n--- ANALIZA (Tryb: {mode}) ---")
+        logging.info(f"\nANALIZA (Tryb: {mode})")
         print(df.to_string(index=False, na_rep="-"))
 
         if chart_path:
             # Do wykresu zamieniamy None na 0
             df_plot = df.fillna(0)
             self.plot_chart(df_plot, chart_path)
-            print(f"Wykres zapisano do: {chart_path}")
+            logging.info(f"Wykres zapisano do: {chart_path}")
 
     def plot_chart(self, df, path):
         fig, ax = plt.subplots(figsize=(10, 6))

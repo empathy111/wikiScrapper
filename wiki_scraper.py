@@ -6,7 +6,7 @@ from manager import DataManager
 from analyzer import WordAnalyzer
 from crawler import WikiCrawler
 
-# Konfiguracja logowania
+# Konfiguracja loggowania
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class WikiApp:
             )
             return
 
-        # Walidacja: Dla pozostałych trybów fraza jest wymagana
+        # Dla pozostałych trybów fraza jest wymagana
         if not self.args.phrase:
             logger.error("Błąd: Musisz podać frazę dla wybranego trybu!")
             sys.exit(1)

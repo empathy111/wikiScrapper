@@ -1,6 +1,10 @@
 import os
 import json
+import logging
 
+# Konfiguracja loggowania
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class DataManager:
     def __init__(self):
@@ -29,7 +33,7 @@ class DataManager:
                     if content.strip():
                         global_counts = json.loads(content)
             except Exception as e:
-                print(f"[MANAGER] Błąd odczytu JSON ({e}). Tworzę nową bazę.")
+                logger.error(f"[MANAGER] Błąd odczytu JSON ({e}). Tworzę nową bazę.")
 
         # Aktualizacja bazy
         for word, count in current_counts.items():

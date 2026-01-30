@@ -71,7 +71,6 @@ class TestWikiProject(unittest.TestCase):
     # TEST 4: Weryfikacja generowania nazw plików CSV
     def test_csv_filename(self):
         manager = DataManager()
-        # Import wewnątrz testu, aby nie zaśmiecać globalnych importów jeśli niepotrzebne
         import pandas as pd
         df = pd.DataFrame({'Col1': [1, 2]})
 
