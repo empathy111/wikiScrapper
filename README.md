@@ -17,10 +17,11 @@ pip install -r requirements.txt
 
 - `wiki_scraper.py` – Główny plik uruchomieniowy.
 - `scraper.py` – Logika pobierania i parsowania HTML.
-- `crawler.py` – Automat do chodzenia po linkach (BFS).
+- `crawler.py` – Logika chodzenia po linkach (BFS).
 - `analyzer.py` – Analiza statystyczna i generowanie wykresów.
 - `manager.py` – Zarządzanie danymi (zapis CSV, JSON).
 - `wiki_tests.py` – Testy jednostkowe.
+- `wiki_scraper_integration_test.py` – Test integracyjny.
 
 ## Instrukcja użycia
 
@@ -45,7 +46,7 @@ Pobiera n-tą tabelę z artykułu i zapisuje ją do pliku CSV.
 python wiki_scraper.py "Aespa" --table --number 1
 ```
 
-### 3. Zliczanie słów (tryb pojedynczy)
+### 3. Zliczanie słów 
 
 Zlicza wystąpienia wszystkich słów w danym artykule i aktualizuje globalną bazę `word-counts.json`.
 
@@ -53,7 +54,7 @@ Zlicza wystąpienia wszystkich słów w danym artykule i aktualizuje globalną b
 python wiki_scraper.py "Twice" --count-words
 ```
 
-### 4. Crawler (Automatyczne zliczanie)
+### 4. Crawler
 
 Zaczyna od podanej frazy i podąża za linkami wewnętrznymi do zadanej głębokości, zliczając słowa z każdego odwiedzonego artykułu.
 
@@ -61,7 +62,7 @@ Zaczyna od podanej frazy i podąża za linkami wewnętrznymi do zadanej głębok
 - `--wait`: czas oczekiwania w sekundach między zapytaniami.
 
 ```shell
-python wiki_scraper.py "K-pop" --auto-count-words --depth 2 --wait 1.5
+python wiki_scraper.py "aespa" --auto-count-words --depth 2 --wait 1.5
 ```
 
 ### 5. Analiza i wykresy
