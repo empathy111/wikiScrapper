@@ -98,7 +98,7 @@ class WikiScraper:
             return []
 
         text = content.get_text(separator=' ', strip=True)
-        # Znajdź słowa, litery zamień na małe
+        # Znajdywanie słów- litery zamieniamy na małe
         return re.findall(r'\w{2,}', text.lower())
 
     def get_internal_links(self):

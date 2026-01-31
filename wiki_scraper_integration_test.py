@@ -8,7 +8,6 @@ def run_integration_test():
 
     phrase = "Test_Integration_Dummy"
     filename = f"{phrase}.html"
-
     html_content = """
     <html>
         <body>

@@ -18,7 +18,7 @@ class WikiApp:
         self.crawler = WikiCrawler(self.manager)
 
     def run(self):
-        # Tryb analizy nie wymaga frazy wejściowej
+        # Tryb analizy, który nie wymaga frazy wejściowej
         if self.args.mode == 'analyze':
             self.analyzer.analyze(
                 mode=self.args.analyze_mode,
