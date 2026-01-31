@@ -43,7 +43,7 @@ Pobiera n-tą tabelę z artykułu i zapisuje ją do pliku CSV.
 - `--first-row-is-header`: opcjonalna flaga, jeśli pierwszy wiersz to nagłówek.
 
 ```shell
-python wiki_scraper.py "Aespa" --table --number 1
+python wiki_scraper.py "aespa" --table --number 1
 ```
 
 ### 3. Zliczanie słów 
@@ -62,7 +62,7 @@ Zaczyna od podanej frazy i podąża za linkami wewnętrznymi do zadanej głębok
 - `--wait`: czas oczekiwania w sekundach między zapytaniami.
 
 ```shell
-python wiki_scraper.py "Aespa" --auto-count-words --depth 2 --wait 1.5
+python wiki_scraper.py "aespa" --auto-count-words --depth 2 --wait 1.5
 ```
 
 ### 5. Analiza i wykresy
