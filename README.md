@@ -1,6 +1,6 @@
 # Wiki Scraper
 
-Projekt służący do pobierania, analizy i przetwarzania danych ze stron typu Wiki (domyślnie skonfigurowany pod *generasia.com*, ale działa na silniku MediaWiki). Narzędzie umożliwia pobieranie streszczeń, ekstrahowanie tabel do plików CSV, zliczanie słów oraz analizę statystyczną języka.
+Projekt służący do pobierania, analizy i przetwarzania danych ze stron typu Wiki (domyślnie skonfigurowany pod *generasia.com*, ale działa na silniku MediaWiki). Narzędzie umożliwia pobieranie streszczeń, ekstrahowanie tabel do plików CSV, zliczanie słów oraz zawiera analizę statystyczną języka.
 
 ## Wymagania i instalacja
 
